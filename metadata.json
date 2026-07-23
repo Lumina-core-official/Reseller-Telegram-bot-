@@ -1,0 +1,6 @@
+{
+  "name": "NEXUS",
+  "description": "NEXUS - Ultra-low latency P2P Screen Sharing, Encrypted Communication & AI Assistant with classic premium UI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
