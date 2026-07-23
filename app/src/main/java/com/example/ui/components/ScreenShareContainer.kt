@@ -60,6 +60,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -203,14 +204,30 @@ fun ScreenShareContainer(
             }
         }
 
-        // Live Screen Share Video Viewport
+        // Live Screen Share Video Viewport with 3D Depth Projection
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
+                .graphicsLayer {
+                    rotationX = if (isStreaming) 4f else 0f
+                    cameraDistance = 14f * density
+                    shadowElevation = 16.dp.toPx()
+                    spotShadowColor = if (isStreaming) NeonGreen else CyberCyan
+                }
                 .clip(RoundedCornerShape(12.dp))
                 .background(CyberSurfaceDark)
-                .border(1.dp, CyberBorder, RoundedCornerShape(12.dp))
+                .border(
+                    width = 1.5.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            if (isStreaming) NeonGreen else CyberCyan,
+                            ElectricPurple.copy(alpha = 0.5f),
+                            CyberBorder
+                        )
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                )
                 .testTag("screen_share_viewport")
         ) {
             if (isStreaming) {

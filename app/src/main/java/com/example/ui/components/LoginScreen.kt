@@ -1,6 +1,8 @@
 package com.example.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
@@ -35,6 +38,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +47,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -77,6 +83,7 @@ import com.example.ui.theme.ObsidianBackground
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -88,6 +95,34 @@ fun LoginScreen(
     var passwordInput by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isAuthenticating by remember { mutableStateOf(false) }
+    var authStepText by remember { mutableStateOf("VERIFYING CREDENTIALS...") }
+
+    // Authenticaton Sequence Engine
+    val triggerAuthentication = { acc: NexusUser ->
+        if (passwordInput.trim() == acc.password) {
+            errorMessage = null
+            isAuthenticating = true
+        } else {
+            errorMessage = "ACCESS DENIED: Invalid password token for ${acc.name}"
+        }
+    }
+
+    LaunchedEffect(isAuthenticating) {
+        if (isAuthenticating && selectedAccount != null) {
+            val acc = selectedAccount!!
+            authStepText = "1/3 VALIDATING SECURITY TOKEN..."
+            delay(400)
+            authStepText = "2/3 DECRYPTING BIOMETRIC CLEARANCE..."
+            delay(400)
+            authStepText = "3/3 ESTABLISHING SESSION TRUST..."
+            delay(350)
+            authStepText = "ACCESS GRANTED. WELCOME ${acc.name.uppercase()}"
+            delay(250)
+            isAuthenticating = false
+            onSelectAccount(acc)
+        }
+    }
 
     Box(
         modifier = modifier
@@ -101,37 +136,54 @@ fun LoginScreen(
                     )
                 )
             )
-            .padding(20.dp),
+            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(vertical = 16.dp),
+                .padding(vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Premium NEXUS Branding Header
-            Surface(
-                color = CyberSurfaceDark,
-                shape = CircleShape,
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, CyberCyan)
+            // 3D Holographic Header Container
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .graphicsLayer {
+                        rotationX = 12f
+                        cameraDistance = 12f * density
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(72.dp)
-                        .padding(12.dp),
-                    contentAlignment = Alignment.Center
+                // 3D Wireframe Canvas Background
+                Holographic3dCanvas(
+                    modifier = Modifier.fillMaxSize(),
+                    primaryColor = CyberCyan,
+                    secondaryColor = ElectricPurple
+                )
+
+                Surface(
+                    color = CyberSurfaceDark.copy(alpha = 0.85f),
+                    shape = CircleShape,
+                    border = androidx.compose.foundation.BorderStroke(1.5.dp, CyberCyan)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.nexus_premium_logo_1784826591591),
-                        contentDescription = "NEXUS Logo",
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .padding(12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.nexus_premium_logo_1784826591591),
+                            contentDescription = "NEXUS Logo",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = "NEXUS COMMAND PORTAL",
@@ -139,39 +191,39 @@ fun LoginScreen(
                 color = TextPrimary,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 2.sp,
-                fontSize = 22.sp
+                fontSize = 20.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "AUTHENTICATED OPERATOR GATEWAY (3D DEEP-PERSPECTIVE)",
+                style = MaterialTheme.typography.labelMedium,
+                color = ElectricPurple,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "AUTHENTICATED OPERATOR GATEWAY",
-                style = MaterialTheme.typography.labelMedium,
-                color = ElectricPurple,
-                fontFamily = FontFamily.Monospace,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Select an authorized account & enter the security token password.",
+                text = "Touch & drag cards to tilt in 3D space. Select an account to log in.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextMuted,
-                fontSize = 13.sp
+                fontSize = 12.sp
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Account Selection List (4 Accounts)
+            // Account Selection Cards with 3D Depth Tilt
             accounts.forEach { acc ->
                 val isSelected = selectedAccount?.id == acc.id
 
-                Card(
+                ThreeDTiltCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                        .padding(vertical = 5.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .clickable {
                             selectedAccount = acc
@@ -179,13 +231,9 @@ fun LoginScreen(
                             passwordInput = ""
                         }
                         .testTag("account_card_${acc.id}"),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) CyberSurfaceVariant else CyberSurfaceDark
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        if (isSelected) 1.5.dp else 1.dp,
-                        if (isSelected) CyberCyan else CyberBorder
-                    )
+                    shape = RoundedCornerShape(12.dp),
+                    borderColor = if (isSelected) CyberCyan else CyberBorder,
+                    enableAutoFloat = isSelected
                 ) {
                     Row(
                         modifier = Modifier
@@ -270,174 +318,202 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // Password Field & Auto-Fill Hint for Selected Account
             selectedAccount?.let { acc ->
-                Column(
+                ThreeDTiltCard(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
+                    borderColor = ElectricPurple,
+                    enableAutoFloat = false
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "SECURITY PASSWORD TOKEN",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = ElectricPurple,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp
-                        )
-
-                        // Quick Auto-Fill Password Chip
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(CyberSurfaceDark)
-                                .border(1.dp, CyberBorder, RoundedCornerShape(6.dp))
-                                .clickable {
-                                    passwordInput = acc.password
-                                    errorMessage = null
-                                }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                                .testTag("autofill_password_chip"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "🔑 AUTO-FILL (${acc.password})",
-                                fontSize = 10.sp,
-                                color = HighVisAmber,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
-                        value = passwordInput,
-                        onValueChange = {
-                            passwordInput = it
-                            errorMessage = null
-                        },
-                        placeholder = {
-                            Text(
-                                text = "Enter password (e.g. ${acc.password})",
-                                color = TextMuted,
-                                fontSize = 13.sp
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Key,
-                                contentDescription = "Password",
-                                tint = ElectricPurple,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = "Toggle Visibility",
-                                    tint = TextMuted,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(onDone = {
-                            if (passwordInput == acc.password) {
-                                onSelectAccount(acc)
-                            } else {
-                                errorMessage = "ACCESS DENIED: Password token invalid for ${acc.name}"
-                            }
-                        }),
-                        singleLine = true,
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .testTag("password_input_field"),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyberCyan,
-                            unfocusedBorderColor = CyberBorder,
-                            focusedContainerColor = CyberSurfaceDark,
-                            unfocusedContainerColor = CyberSurfaceDark
-                        ),
-                        shape = RoundedCornerShape(10.dp)
-                    )
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "SECURITY TOKEN KEY",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = ElectricPurple,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
 
-                    AnimatedVisibility(visible = errorMessage != null) {
-                        errorMessage?.let { err ->
+                            // Quick Auto-Fill Password Chip
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(CrimsonRed.copy(alpha = 0.15f))
-                                    .border(1.dp, CrimsonRed, RoundedCornerShape(8.dp))
-                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(CyberSurfaceDark)
+                                    .border(1.dp, CyberBorder, RoundedCornerShape(6.dp))
+                                    .clickable {
+                                        passwordInput = acc.password
+                                        errorMessage = null
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .testTag("autofill_password_chip"),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = err,
-                                    color = CrimsonRed,
+                                    text = "🔑 AUTO-FILL (${acc.password})",
+                                    fontSize = 10.sp,
+                                    color = HighVisAmber,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        OutlinedTextField(
+                            value = passwordInput,
+                            onValueChange = {
+                                passwordInput = it
+                                errorMessage = null
+                            },
+                            placeholder = {
+                                Text(
+                                    text = "Enter token password (${acc.password})",
+                                    color = TextMuted,
+                                    fontSize = 13.sp
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Key,
+                                    contentDescription = "Password",
+                                    tint = ElectricPurple,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = "Toggle Visibility",
+                                        tint = TextMuted,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            },
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(onDone = {
+                                triggerAuthentication(acc)
+                            }),
+                            singleLine = true,
+                            enabled = !isAuthenticating,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("password_input_field"),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = CyberCyan,
+                                unfocusedBorderColor = CyberBorder,
+                                focusedContainerColor = CyberSurfaceDark,
+                                unfocusedContainerColor = CyberSurfaceDark
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+
+                        AnimatedVisibility(visible = errorMessage != null) {
+                            errorMessage?.let { err ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(CrimsonRed.copy(alpha = 0.15f))
+                                        .border(1.dp, CrimsonRed, RoundedCornerShape(8.dp))
+                                        .padding(10.dp)
+                                ) {
+                                    Text(
+                                        text = err,
+                                        color = CrimsonRed,
+                                        fontSize = 11.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        AnimatedVisibility(visible = isAuthenticating) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(CyberCyan.copy(alpha = 0.12f))
+                                    .border(1.dp, CyberCyan, RoundedCornerShape(8.dp))
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    color = CyberCyan,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = authStepText,
+                                    color = CyberCyan,
                                     fontSize = 11.sp,
                                     fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    // Authenticate Button
-                    Button(
-                        onClick = {
-                            if (passwordInput == acc.password) {
-                                onSelectAccount(acc)
-                            } else {
-                                errorMessage = "ACCESS DENIED: Password token invalid for ${acc.name}"
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .testTag("authenticate_button"),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CyberCyan,
-                            contentColor = ObsidianBackground
-                        ),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "Auth",
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "AUTHENTICATE AS ${acc.name.uppercase()}",
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp,
-                            fontSize = 13.sp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Go",
-                            modifier = Modifier.size(18.dp)
-                        )
+                        // Authenticate Button
+                        Button(
+                            onClick = { triggerAuthentication(acc) },
+                            enabled = !isAuthenticating,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .testTag("authenticate_button"),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = CyberCyan,
+                                contentColor = ObsidianBackground
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Auth",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (isAuthenticating) "AUTHENTICATING..." else "AUTHENTICATE AS ${acc.name.uppercase()}",
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Go",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
