@@ -70,6 +70,7 @@ import com.example.ui.theme.CyberCyan
 import com.example.ui.theme.CyberSurfaceDark
 import com.example.ui.theme.CyberSurfaceVariant
 import com.example.ui.theme.ElectricPurple
+import com.example.ui.theme.GlassPanel
 import com.example.ui.theme.HighVisAmber
 import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.ObsidianBackground

@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -58,6 +59,7 @@ import com.example.ui.theme.CyberSurfaceDark
 import com.example.ui.theme.ElectricPurple
 import com.example.ui.theme.HighVisAmber
 import com.example.ui.theme.NeonGreen
+import com.example.ui.theme.ObsidianBackground
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
@@ -94,12 +96,28 @@ fun CyberHeader(
         label = "pulse_alpha"
     )
 
-    Surface(
-        color = CyberSurfaceDark,
-        tonalElevation = 8.dp,
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .border(1.dp, CyberBorder, RoundedCornerShape(0.dp))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        CyberSurfaceDark.copy(alpha = 0.9f),
+                        ObsidianBackground.copy(alpha = 0.95f)
+                    )
+                )
+            )
+            .border(
+                width = 1.dp,
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        CyberCyan.copy(alpha = 0.35f),
+                        NeonGreen.copy(alpha = 0.25f),
+                        CyberBorder
+                    )
+                ),
+                shape = RoundedCornerShape(0.dp)
+            )
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)

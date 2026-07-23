@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
@@ -288,9 +289,20 @@ fun CyberBottomBar(
     onSelectTab: (AppTab) -> Unit
 ) {
     NavigationBar(
-        containerColor = CyberSurfaceDark,
+        containerColor = CyberSurfaceDark.copy(alpha = 0.92f),
         tonalElevation = 8.dp,
-        modifier = Modifier.border(1.dp, CyberBorder)
+        modifier = Modifier.border(
+            width = 1.dp,
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    CyberCyan.copy(alpha = 0.35f),
+                    ElectricPurple.copy(alpha = 0.25f),
+                    NeonGreen.copy(alpha = 0.25f),
+                    CyberBorder
+                )
+            ),
+            shape = RoundedCornerShape(0.dp)
+        )
     ) {
         NavigationBarItem(
             selected = selectedTab == AppTab.STREAM,
